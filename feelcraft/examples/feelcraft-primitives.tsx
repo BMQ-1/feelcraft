@@ -444,3 +444,236 @@ export function useHoldToConfirm(onConfirm: () => void, holdMs = 850) {
     },
   };
 }
+
+/* ============================================================================
+ * 10. SMOOTH THEME TRANSITION MODES (Crossfade & Origin-Ripple View Transition)
+ * Choose proportional to the app: `switchThemeInstant` for dense Operate tools,
+ * `switchThemeCrossfade` (~360ms) for celestial/tactile toggles, and
+ * `switchThemeRipple` (~440ms radial View Transition) for Showcase surfaces.
+ * ========================================================================== */
+export function switchThemeCrossfade(applyThemeChange: () => void, durationMs = 360) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    switchThemeInstant(applyThemeChange);
+    return;
+  }
+  const root = document.documentElement;
+  root.classList.add('fc-theme-crossfade');
+  applyThemeChange();
+  window.setTimeout(() => {
+    root.classList.remove('fc-theme-crossfade');
+  }, durationMs + 20);
+}
+
+export function switchThemeRipple(
+  applyThemeChange: () => void,
+  origin?: { clientX: number; clientY: number } | HTMLElement | null
+) {
+  const doc = document as Document & {
+    startViewTransition?: (cb: () => void) => unknown;
+  };
+  if (!doc.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    switchThemeInstant(applyThemeChange);
+    return;
+  }
+
+  let x = window.innerWidth / 2;
+  let y = window.innerHeight / 2;
+  if (origin && 'clientX' in origin && (origin.clientX || origin.clientY)) {
+    x = origin.clientX;
+    y = origin.clientY;
+  } else if (origin && 'getBoundingClientRect' in origin) {
+    const r = origin.getBoundingClientRect();
+    x = r.left + r.width / 2;
+    y = r.top + r.height / 2;
+  }
+
+  const maxRadius = Math.hypot(
+    Math.max(x, window.innerWidth - x),
+    Math.max(y, window.innerHeight - y)
+  );
+  const root = document.documentElement;
+  root.style.setProperty('--fc-vt-x', `${x}px`);
+  root.style.setProperty('--fc-vt-y', `${y}px`);
+  root.style.setProperty('--fc-vt-r', `${maxRadius}px`);
+  doc.startViewTransition(applyThemeChange);
+}
+
+/* ============================================================================
+ * 11. RAY-INTERSECTED DIRECTIONAL ENTRY-AWARE HOVER SOLVER
+ * Intersects the incoming pointer segment `(p0 -> p1)` against the target box's
+ * 4 edges so fast pointer sweeps detect the true entry side accurately.
+ * ========================================================================== */
+const DIR_VECTORS: Record<0 | 1 | 2 | 3, { x: string; y: string }> = {
+  0: { x: '0%', y: '-100%' }, // Top
+  1: { x: '100%', y: '0%' },  // Right
+  2: { x: '0%', y: '100%' },  // Bottom
+  3: { x: '-100%', y: '0%' }, // Left
+};
+
+export function detectBoxEntryEdge(
+  rect: DOMRect,
+  current: Point,
+  previous?: Point | null
+): 0 | 1 | 2 | 3 {
+  if (previous && (previous.x !== current.x || previous.y !== current.y)) {
+    const dx = current.x - previous.x;
+    const dy = current.y - previous.y;
+    const hits: Array<{ t: number; edge: 0 | 1 | 2 | 3 }> = [];
+
+    if (dy > 0 && previous.y <= rect.top && current.y >= rect.top) {
+      const t = (rect.top - previous.y) / dy;
+      const ix = previous.x + dx * t;
+      if (ix >= rect.left - 2 && ix <= rect.right + 2) hits.push({ t, edge: 0 });
+    }
+    if (dx < 0 && previous.x >= rect.right && current.x <= rect.right) {
+      const t = (rect.right - previous.x) / dx;
+      const iy = previous.y + dy * t;
+      if (iy >= rect.top - 2 && iy <= rect.bottom + 2) hits.push({ t, edge: 1 });
+    }
+    if (dy < 0 && previous.y >= rect.bottom && current.y <= rect.bottom) {
+      const t = (rect.bottom - previous.y) / dy;
+      const ix = previous.x + dx * t;
+      if (ix >= rect.left - 2 && ix <= rect.right + 2) hits.push({ t, edge: 2 });
+    }
+    if (dx > 0 && previous.x <= rect.left && current.x >= rect.left) {
+      const t = (rect.left - previous.x) / dx;
+      const iy = previous.y + dy * t;
+      if (iy >= rect.top - 2 && iy <= rect.bottom + 2) hits.push({ t, edge: 3 });
+    }
+
+    if (hits.length > 0) {
+      hits.sort((a, b) => a.t - b.t);
+      return hits[0].edge;
+    }
+  }
+
+  const nx = (current.x - (rect.left + rect.width / 2)) / Math.max(1, rect.width / 2);
+  const ny = (current.y - (rect.top + rect.height / 2)) / Math.max(1, rect.height / 2);
+  if (Math.abs(ny) >= Math.abs(nx)) return ny < 0 ? 0 : 2;
+  return nx >= 0 ? 1 : 3;
+}
+
+export function bindDirectionalHover(cardEl: HTMLElement, wipeEl: HTMLElement) {
+  let prev: Point | null = null;
+  let curr: Point | null = null;
+
+  const trackMove = (e: PointerEvent) => {
+    if (!curr || curr.x !== e.clientX || curr.y !== e.clientY) {
+      prev = curr;
+      curr = { x: e.clientX, y: e.clientY };
+    }
+  };
+  const onEnter = (e: PointerEvent) => {
+    const p1 = { x: e.clientX, y: e.clientY };
+    const p0 = curr && (curr.x !== p1.x || curr.y !== p1.y) ? curr : prev;
+    const vec = DIR_VECTORS[detectBoxEntryEdge(cardEl.getBoundingClientRect(), p1, p0)];
+    wipeEl.style.transition = 'none';
+    wipeEl.style.setProperty('--fc-dx', vec.x);
+    wipeEl.style.setProperty('--fc-dy', vec.y);
+    wipeEl.style.setProperty('--fc-dop', '1');
+    void wipeEl.offsetWidth;
+    wipeEl.style.transition = '';
+    wipeEl.style.setProperty('--fc-dx', '0%');
+    wipeEl.style.setProperty('--fc-dy', '0%');
+  };
+  const onLeave = (e: PointerEvent) => {
+    const vec = DIR_VECTORS[detectBoxEntryEdge(cardEl.getBoundingClientRect(), { x: e.clientX, y: e.clientY }, null)];
+    wipeEl.style.setProperty('--fc-dx', vec.x);
+    wipeEl.style.setProperty('--fc-dy', vec.y);
+    wipeEl.style.setProperty('--fc-dop', '0');
+  };
+
+  window.addEventListener('pointermove', trackMove, { passive: true, capture: true });
+  cardEl.addEventListener('pointerenter', onEnter);
+  cardEl.addEventListener('pointerleave', onLeave);
+
+  return () => {
+    window.removeEventListener('pointermove', trackMove, true);
+    cardEl.removeEventListener('pointerenter', onEnter);
+    cardEl.removeEventListener('pointerleave', onLeave);
+  };
+}
+
+/* ============================================================================
+ * 12. INERTIAL RUBBER-BAND SCRUBBER SOLVER (Clamped Value + Over-Pull Tension)
+ * Keeps [0, 100] bounded while stretching track via `84 * (over / (over + 150))`.
+ * ========================================================================== */
+export function computeRubberScrub(clientX: number, rect: DOMRect, maxStretch = 84) {
+  const ratio = (clientX - rect.left) / Math.max(1, rect.width);
+  const value = Math.max(0, Math.min(100, ratio * 100));
+  let stretchPx = 0;
+
+  if (clientX < rect.left) {
+    const over = rect.left - clientX;
+    stretchPx = -maxStretch * (over / (over + 150));
+  } else if (clientX > rect.right) {
+    const over = clientX - rect.right;
+    stretchPx = maxStretch * (over / (over + 150));
+  }
+
+  return { value, stretchPx };
+}
+
+/* ============================================================================
+ * 13. RADIAL atan2 GRAPHIC-TOOL WHEEL SOLVER (Deadzone + Clamping + Polar Ray)
+ * Computes 0..sectorCount-1 from 12 o'clock clockwise with center cancel guard.
+ * ========================================================================== */
+export interface RadialWheelHit {
+  sectorIndex: number; // -1 inside center cancel deadzone
+  angleDeg: number;
+  distancePx: number;
+  rayEndpoint: Point;
+}
+
+export function clampRadialCenter(
+  pointerX: number,
+  pointerY: number,
+  padding = 134
+): Point {
+  return {
+    x: Math.min(window.innerWidth - padding, Math.max(padding, pointerX)),
+    y: Math.min(window.innerHeight - padding, Math.max(padding, pointerY)),
+  };
+}
+
+export function resolveRadialWheelHit(
+  pointerX: number,
+  pointerY: number,
+  wheelCenter: Point,
+  sectorCount = 6,
+  deadzonePx = 26,
+  svgCenter = 128
+): RadialWheelHit {
+  const dx = pointerX - wheelCenter.x;
+  const dy = pointerY - wheelCenter.y;
+  const distancePx = Math.hypot(dx, dy);
+  const angleDeg = (Math.atan2(dy, dx) * (180 / Math.PI) + 360 + 90) % 360;
+
+  if (distancePx < deadzonePx) {
+    return {
+      sectorIndex: -1,
+      angleDeg,
+      distancePx,
+      rayEndpoint: { x: svgCenter, y: svgCenter },
+    };
+  }
+
+  const sectorDeg = 360 / sectorCount;
+  const sectorIndex = Math.round(angleDeg / sectorDeg) % sectorCount;
+  const rad = ((angleDeg - 90) * Math.PI) / 180;
+  const clampedRay = Math.min(104, Math.max(48, distancePx));
+
+  return {
+    sectorIndex,
+    angleDeg,
+    distancePx,
+    rayEndpoint: {
+      x: svgCenter + Math.cos(rad) * clampedRay,
+      y: svgCenter + Math.sin(rad) * clampedRay,
+    },
+  };
+}
+
+export function shouldCommitRadialRelease(openedAtMs: number, debounceMs = 180): boolean {
+  return performance.now() - openedAtMs > debounceMs;
+}

@@ -78,7 +78,14 @@ Choose the context surface that fits the object right-clicked (all origin-aware,
 | **Issue Rows / Tasks** | **4-Cell Priority / Status Matrix** | Replace nested submenus with a 2×2 or 1×4 quick-select matrix grid at the top of the menu. |
 | **Media / Tracks / Files with Meta** | **Split-Column Live Preview** | Pair the left command list with a right-hand metadata card updating on `pointerenter`. |
 | **Mobile / Spatial Cards** | **Peek-and-Pop Elevated Scrim** | Blur surrounding chrome behind a quiet scrim while lifting the target (`scale(1.02)`) above an action stack. |
-| **Creative Tools / Canvas Modes** | **Radial `atan2` Wheel** | Center 6 tool wedges on pointer coordinates for single-flick `Math.atan2(dy, dx)` selection. |
+| **Creative Tools / Canvas Modes** | **Radial `atan2` Wheel** | Center 6 annular wedges on pointer coordinates with a `26px` center cancel deadzone, hold-release + key fallback, and live polar ray tracking. |
+
+### Radial Graphic-Tool Wheel (`6-Wedge atan2 Marking Menu`)
+For canvas, vector, or mode-heavy creative tools, a radial marking menu beats nested dropdowns for muscle memory when engineered with these 4 guards:
+1. **Viewport Clamp + Inner Cancel Deadzone:** Clamp wheel center `pad = 134px` inside viewport edges (`256×256px` surface). Ignore pointer angles while `hypot(dx, dy) < 26px` (or clicking the `r=42px` center hub) so jitter or stationary clicks cancel cleanly (`Esc` / outside click also dismisses).
+2. **Annular Wedge + Polar Ray Readout:** Compute `deg = (Math.atan2(dy, dx) * 180 / Math.PI + 360 + 90) % 360` (`0°` = top) and `idx = Math.round(deg / 60) % 6`. Rotate a single SVG annular wedge by `idx * 60deg`, draw a clamped polar ray (`48px..104px`) to the cursor direction, show tabular `deg° · Key` in the hub, and separate `.is-equipped` (persistent `4px` dot) from `.is-selected` (active wedge).
+3. **Hold-Release Debounce (`> 180ms`):** On `mouseup`, commit only if open `> 180ms` and a wedge is highlighted—quick right-clicks keep the palette open for deliberative click or keyboard choice.
+4. **Always Provide Accessible Fallbacks:** Pair context right-click summoning with a compact inline quick-tool strip, explicit summon trigger button, `1–6`/mnemonic single-key hotkeys, and `Arrow` + `Enter` navigation.
 
 ---
 
@@ -97,3 +104,19 @@ Use **only on Showcase/Hero surfaces** (never behind dense tables or text editor
 4. **Editorial Halftone Luminance Field (`Canvas 2D`):** Print-screen dot raster whose radii swell gently around a soft pointer light source.
 5. **Harmonic Interference Ribbons (`Canvas 2D`):** 4–5 low-alpha (`0.06–0.28`) Bezier sine ribbons in neutral ink + 1 accent stroke—never neon glow washes.
 - **Optional Tactile Surface Finish:** A subtle micro-film SVG noise grain (`opacity: 0.025–0.035`) + `2px` top scroll-progress hairline (`scaleX`) for long editorial pages.
+
+---
+
+## E. High-Craft Precision Additions (Zero-CLS & Direct Manipulation)
+
+1. **Ray-Intersected Directional Hover Wipe (Not Naive Quadrant Math):**
+   - Track the trailing pointer position globally (`prevPointer`, `currPointer`). On `pointerenter`, intersect the incoming segment `(p0 -> p1)` against the card's 4 bounding edges (`Top`, `Right`, `Bottom`, `Left` with `±2px` corner tolerance), falling back to aspect-normalized quadrant coordinates only on focus or fast synthetic entry.
+   - Snap the wipe overlay (`translate3d` off-edge) with `transition: none`, commit one frame, then ease into place (`240ms cubic-bezier(0.22, 1, 0.36, 1)`); on `pointerleave`, slide out through the exit edge.
+2. **Kinetic Async Submit Lifecycle Pill (`idle` -> `loading` -> `done`):**
+   - Lock `min-width` on async action pills across all three states so surrounding toolbars and forms suffer **zero horizontal layout shift (`CLS = 0`)**. Use a `15px` crisp arc spinner in `loading` and semantic green surface + border in `done` before returning cleanly to `idle`.
+3. **Inertial Rubber-Band Scrubber Slider:**
+   - Remove CSS transition via `.is-dragging` + `setPointerCapture` + `touch-action: none` during active drag so value tracks `1:1` with zero lag.
+   - When dragging past `[0%, 100%]`, clamp the logical value cleanly while shifting the track via hyperbolic over-pull damping (`84 * (over / (over + 150))`), then spring back to `0px` (`260ms`) on release. Expose `role="slider"`, `aria-valuenow`, and `Arrow`/`Home`/`End` keyboard support.
+4. **Calibrated Artboard Stage & Scroll-Velocity Coupling:**
+   - Frame specimen/canvas stages with a quiet `16px` hairline dot grid and subtle `8×8px` outer corner crop marks (`pointer-events: none`) rather than noisy colored cards.
+   - On `Showcase` canvas atmospheres, fold damped scroll-wheel impulse into the tick (`tick += 0.032 + scrollVel * 0.004`, `scrollVel *= 0.88`) so scrolling feels physically coupled—frozen completely under `prefers-reduced-motion: reduce`.

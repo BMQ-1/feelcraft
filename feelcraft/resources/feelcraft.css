@@ -677,3 +677,291 @@ textarea,
   pointer-events: none;
   z-index: 60;
 }
+
+/* ============================================================================
+ * 25. SMOOTH THEME SWITCHING MODES (Crossfade & Origin-Ripple View Transition)
+ * Use `.theme-switching` (Section 6) for instant Operate tools; use
+ * `.fc-theme-crossfade` (~320ms temporary helper) or View Transitions
+ * (`::view-transition-new(root)`) for tactile Showcase / Studio surfaces.
+ * ========================================================================== */
+html.fc-theme-crossfade,
+html.fc-theme-crossfade body,
+html.fc-theme-crossfade .fc-surface-card,
+html.fc-theme-crossfade .fc-option-card {
+  transition:
+    background-color 320ms var(--fc-ease-out),
+    color 260ms var(--fc-ease-out),
+    border-color 320ms var(--fc-ease-out);
+}
+
+@keyframes fc-vt-circle-expand {
+  from { clip-path: circle(0px at var(--fc-vt-x, 50%) var(--fc-vt-y, 50%)); }
+  to   { clip-path: circle(var(--fc-vt-r, 100vmax) at var(--fc-vt-x, 50%) var(--fc-vt-y, 50%)); }
+}
+
+::view-transition-old(root) {
+  animation: none;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+  animation: fc-vt-circle-expand 440ms var(--fc-ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.fc-theme-crossfade,
+  html.fc-theme-crossfade * {
+    transition-duration: 0.01ms !important;
+  }
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+
+/* ============================================================================
+ * 26. RAY-INTERSECTED DIRECTIONAL ENTRY HOVER WIPE
+ * Driven by `--fc-dx`, `--fc-dy`, and `--fc-dop` from `useDirectionalHover`.
+ * ========================================================================== */
+.fc-dir-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--fc-radius-card);
+  border: 1px solid var(--fc-border);
+  background-color: var(--fc-bg-surface);
+  color: var(--fc-ink-primary);
+}
+
+.fc-dir-wipe {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: color-mix(in srgb, var(--fc-accent) 12%, transparent);
+  border: 1.5px solid var(--fc-accent);
+  transform: translate3d(var(--fc-dx, 0%), var(--fc-dy, -100%), 0);
+  opacity: var(--fc-dop, 0);
+  transition:
+    transform 240ms var(--fc-ease-out),
+    opacity 180ms var(--fc-ease-out);
+  pointer-events: none;
+}
+
+/* ============================================================================
+ * 27. KINETIC ASYNC SUBMIT LIFECYCLE PILL (Zero-CLS Locked Width)
+ * ========================================================================== */
+.fc-submit-pill {
+  min-width: 164px;
+  min-height: 44px;
+  padding-inline: 18px;
+  border-radius: 9999px;
+  border: 1px solid var(--fc-border);
+  background-color: var(--fc-bg-surface);
+  color: var(--fc-ink-primary);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition:
+    background-color 180ms var(--fc-ease-out),
+    border-color 180ms var(--fc-ease-out),
+    transform 90ms var(--fc-ease-out);
+}
+
+.fc-submit-pill:active {
+  transform: scale(0.97);
+}
+
+.fc-submit-pill[data-state="loading"] {
+  border-color: var(--fc-accent);
+}
+
+.fc-submit-pill[data-state="done"] {
+  background-color: rgba(22, 163, 74, 0.16);
+  border-color: #16a34a;
+  color: #16a34a;
+}
+
+.fc-submit-spin {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid var(--fc-border);
+  border-top-color: var(--fc-accent);
+  animation: fc-spin-arc 650ms linear infinite;
+}
+
+@keyframes fc-spin-arc {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================================
+ * 28. INERTIAL RUBBER-BAND SCRUBBER SLIDER
+ * Disable CSS transition during active drag (`is-dragging`) for 1:1 tracking.
+ * ========================================================================== */
+.fc-rubber-track {
+  position: relative;
+  height: 32px;
+  border-radius: var(--fc-radius-button);
+  background-color: var(--fc-bg-surface);
+  border: 1px solid var(--fc-border);
+  cursor: ew-resize;
+  touch-action: none;
+  transform: translateX(var(--fc-rb-stretch, 0px));
+  transition: transform 260ms var(--fc-ease-out);
+}
+
+.fc-rubber-track.is-dragging {
+  transition: none;
+}
+
+.fc-rubber-fill {
+  position: absolute;
+  inset-block: 3px;
+  inset-inline-start: 3px;
+  border-radius: calc(var(--fc-radius-button) - 3px);
+  background-color: color-mix(in srgb, var(--fc-accent) 14%, transparent);
+  border-inline-end: 2px solid var(--fc-accent);
+  pointer-events: none;
+}
+
+/* ============================================================================
+ * 29. CALIBRATED ARTBOARD STAGE (16px Dot Grid + Subtle Corner Crop Marks)
+ * ========================================================================== */
+.fc-artboard-stage {
+  position: relative;
+  border-radius: var(--fc-radius-card);
+  border: 1px solid var(--fc-border);
+  background-color: var(--fc-bg-base);
+  background-image: radial-gradient(color-mix(in srgb, var(--fc-ink-muted) 28%, transparent) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.fc-artboard-stage::before,
+.fc-artboard-stage::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+}
+
+.fc-artboard-stage::before {
+  top: 8px;
+  inset-inline-start: 8px;
+  border-top: 1px solid var(--fc-border);
+  border-inline-start: 1px solid var(--fc-border);
+}
+
+.fc-artboard-stage::after {
+  bottom: 8px;
+  inset-inline-end: 8px;
+  border-bottom: 1px solid var(--fc-border);
+  border-inline-end: 1px solid var(--fc-border);
+}
+
+/* ============================================================================
+ * 30. RADIAL atan2 GRAPHIC-TOOL WHEEL (6-Wedge Annular Marking Menu)
+ * Fixed 256x256 palette centered on clamped pointer coordinates with a 42px
+ * cancel hub, equipped dot indicator, and 180ms origin scale-in.
+ * ========================================================================== */
+.fc-radial-wheel {
+  position: fixed;
+  z-index: 105;
+  width: 256px;
+  height: 256px;
+  margin-left: -128px;
+  margin-top: -128px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.92);
+  transition:
+    opacity var(--fc-t-fast) var(--fc-ease-out),
+    transform var(--fc-t-base) var(--fc-ease-out);
+}
+
+.fc-radial-wheel.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.fc-radial-ring {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--fc-bg-surface) 94%, transparent);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--fc-border);
+}
+
+.fc-radial-wedge-group {
+  transform-origin: 128px 128px;
+  opacity: 0;
+  transition:
+    opacity 110ms var(--fc-ease-out),
+    transform 130ms var(--fc-ease-out);
+}
+
+.fc-radial-wheel.has-selection .fc-radial-wedge-group {
+  opacity: 1;
+}
+
+.fc-radial-hub {
+  position: absolute;
+  inset: 86px;
+  border-radius: 50%;
+  background-color: var(--fc-bg-raised);
+  border: 1px solid var(--fc-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.fc-radial-node {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  margin-left: -26px;
+  margin-top: -26px;
+  border-radius: 50%;
+  border: 1px solid var(--fc-border);
+  background-color: var(--fc-bg-surface);
+  color: var(--fc-ink-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  transition:
+    background-color 100ms var(--fc-ease-out),
+    border-color 100ms var(--fc-ease-out),
+    color 100ms var(--fc-ease-out),
+    transform 120ms var(--fc-ease-out);
+}
+
+.fc-radial-node.is-equipped::after {
+  content: "";
+  position: absolute;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--fc-accent);
+}
+
+.fc-radial-node.is-selected {
+  background-color: var(--fc-accent);
+  border-color: var(--fc-accent);
+  color: #ffffff;
+  transform: scale(1.12);
+}
+
+.fc-radial-node.is-selected.is-equipped::after {
+  background-color: #ffffff;
+}

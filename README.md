@@ -70,7 +70,7 @@ Feelcraft prevents both by running every task through **Step 0** (product direct
 | Pillar | What It Enforces | Reference |
 | :--- | :--- | :--- |
 | **Visual Foundations** | Tinted neutral ramps, ChatGPT green &amp; purple slop bans, `4px` grid, typography, thin scrollbars, `appearance: none` controls, RTL &amp; focus rings | [05-visual-foundations.md](./feelcraft/references/05-visual-foundations.md) |
-| **Kinetic Craft Atlas** | 11 restrained micro-interactions (gliding pills, ghost rolls, `1px` spotlights, odometers), 8 context surfaces &amp; 5 battery-safe backdrops | [06-kinetic-atlas.md](./feelcraft/references/06-kinetic-atlas.md) |
+| **Kinetic Craft Atlas** | Restrained micro-interactions (gliding pills, ray-intersected directional hovers, 6-wedge `atan2` radial wheels, rubber scrubbers, theme ripples), 8 context surfaces &amp; 5 battery-safe backdrops | [06-kinetic-atlas.md](./feelcraft/references/06-kinetic-atlas.md) |
 | **UX Laws** | Fitts's, Hick's, Miller's (`5–7` chunking), Doherty (`<400ms`), Postel's, Jakob's, Von Restorff, Focus Staging &amp; Peak-End | [01-cognitive-laws.md](./feelcraft/references/01-cognitive-laws.md) |
 | **Motion Physics** | Frequency gating, `<300ms` curves, `scale(0.97)` entrances, spring velocity handoff, `interpolate-size` accordions &amp; reduced-motion safety | [02-motion-physics.md](./feelcraft/references/02-motion-physics.md) |
 | **Product Engineering** | 20 flagship details (OTP paste-split, `Cmd+K`, SWR, `Idempotency-Key`, Safe Submenu Triangle, `tabular-nums`) &amp; 8 sidebar architectures | [03-expensive-details.md](./feelcraft/references/03-expensive-details.md) |
@@ -82,8 +82,8 @@ Feelcraft prevents both by running every task through **Step 0** (product direct
 | File | Contents |
 | :--- | :--- |
 | [feelcraft/SKILL.md](./feelcraft/SKILL.md) | Step 0 Direction &amp; Choice Gate, 3-Gate Engine, `AUDIT` &amp; `BUILD` workflows |
-| [feelcraft/resources/feelcraft.css](./feelcraft/resources/feelcraft.css) | 24-section CSS foundation (ramps, scrollbars, tactile inputs, kinetic primitives) |
-| [feelcraft/examples/feelcraft-primitives.tsx](./feelcraft/examples/feelcraft-primitives.tsx) | 9 TypeScript/React helpers (Safe Triangle, OTP Split, Undo Queue, Spotlight, Segmented Pill) |
+| [feelcraft/resources/feelcraft.css](./feelcraft/resources/feelcraft.css) | 30-section CSS foundation (ramps, scrollbars, tactile inputs, theme ripple/crossfade, radial wheel &amp; kinetic primitives) |
+| [feelcraft/examples/feelcraft-primitives.tsx](./feelcraft/examples/feelcraft-primitives.tsx) | 13 TypeScript/React helpers (Safe Triangle, OTP Split, Undo Queue, Theme Ripple/Crossfade, Directional Hover, Radial `atan2` Solver) |
 | [feelcraft/agents/openai.yaml](./feelcraft/agents/openai.yaml) | OpenAI Codex UI metadata manifest |
 
 </details>
