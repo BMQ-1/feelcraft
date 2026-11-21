@@ -1,0 +1,679 @@
+/**
+ * Feelcraft Core CSS Tokens & Micro-Utilities (`resources/feelcraft.css`)
+ * Standalone foundation for tinted neutral color ramps, luminance depth,
+ * 4px spacing grid, <300ms motion physics, concentric radii, hit-slop,
+ * typographic precision, and automatic prefers-reduced-motion accessibility.
+ */
+
+:root {
+  color-scheme: light;
+  /* Enable native smooth transitions to/from height: auto & width: auto */
+  interpolate-size: allow-keywords;
+
+  /* 1. Default Tinted Neutral Ramp — Graphite Light Mode
+   *    (Switchable via [data-theme="dark"] or [data-ramp="warm" | "ink"])
+   */
+  --fc-bg-canvas:        #F8F9FA;
+  --fc-bg-surface:       #FFFFFF;
+  --fc-bg-raised:        #EFF1F4;
+  --fc-ink-primary:      #141518; /* >= 10:1 contrast */
+  --fc-ink-secondary:    #4E525B; /* >= 5.5:1 contrast */
+  --fc-ink-muted:        #6E737E; /* >= 4.5:1 contrast */
+  --fc-border-hairline:  rgba(20, 21, 24, 0.08);
+  --fc-inner-highlight:  inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
+  /* Single Von Restorff Accent & Toned Semantic Status Colors */
+  --fc-accent:           #E03C1F;
+  --fc-accent-ink:       #FFFFFF;
+  --fc-status-success:   #16A34A;
+  --fc-status-warning:   #D97706;
+  --fc-status-danger:    #DC2626;
+
+  /* 2. 4px Rhythm Spacing & Control Height Scale */
+  --fc-space-1:          4px;
+  --fc-space-2:          8px;
+  --fc-space-3:          12px;
+  --fc-space-4:          16px;
+  --fc-space-5:          20px;
+  --fc-space-6:          24px;
+  --fc-space-8:          32px;
+  --fc-space-10:         40px;
+  --fc-space-12:         48px;
+  --fc-control-compact:  32px;
+  --fc-control-default:  36px;
+  --fc-control-touch:    44px;
+
+  /* 3. Snappy Timing Scale (Strict <300ms Ceiling for Functional UI) */
+  --fc-duration-instant: 0ms;
+  --fc-duration-micro:   100ms; /* Button active press, switch thumb, row hover */
+  --fc-duration-fast:    160ms; /* Tooltip, dropdown, exit animations */
+  --fc-duration-base:    220ms; /* Popover, modal enter, toast slide */
+  --fc-duration-limit:   280ms; /* Sheet, drawer, shared view transition */
+
+  /* 4. Slow-In / Slow-Out Kinematic Easing Curves (Never Linear for Space) */
+  --fc-ease-out:         cubic-bezier(0.22, 1, 0.36, 1);
+  --fc-ease-out-expo:    cubic-bezier(0.16, 1, 0.3, 1);
+  --fc-ease-in-out:      cubic-bezier(0.65, 0, 0.35, 1);
+  --fc-ease-in-exit:     cubic-bezier(0.4, 0, 1, 1);
+  --fc-ease-spring-low:  cubic-bezier(0.34, 1.56, 0.64, 1); /* Low-frequency / Peak moments only */
+
+  /* 5. Concentric Border Radius System (R_outer = R_inner + padding) */
+  --fc-radius-outer:     20px;
+  --fc-padding-card:     8px;
+  --fc-radius-inner:     max(4px, calc(var(--fc-radius-outer) - var(--fc-padding-card)));
+}
+
+/* Dark Mode — Graphite Luminance Ramp (Depth from Surface Steps, Not Shadows) */
+.dark,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --fc-bg-canvas:        #0F1012;
+  --fc-bg-surface:       #16181C;
+  --fc-bg-raised:        #1F2228;
+  --fc-ink-primary:      #EDEDEF;
+  --fc-ink-secondary:    #A2A6B0;
+  --fc-ink-muted:        #7E838F;
+  --fc-border-hairline:  rgba(237, 237, 239, 0.08);
+  --fc-inner-highlight:  inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --fc-status-success:   #4CC38A;
+  --fc-status-warning:   #F59E0B;
+  --fc-status-danger:    #E5484D;
+}
+
+/* Warm Stone Ramp Variant */
+[data-ramp="warm"] {
+  --fc-bg-canvas:        #F6F3EC;
+  --fc-bg-surface:       #FCFBF8;
+  --fc-bg-raised:        #ECE7DD;
+  --fc-ink-primary:      #1C1915;
+  --fc-ink-secondary:    #595147;
+  --fc-ink-muted:        #756C60;
+  --fc-border-hairline:  rgba(28, 25, 21, 0.08);
+}
+.dark[data-ramp="warm"],
+[data-theme="dark"][data-ramp="warm"] {
+  --fc-bg-canvas:        #12110F;
+  --fc-bg-surface:       #191715;
+  --fc-bg-raised:        #23201D;
+  --fc-ink-primary:      #F2EDE4;
+  --fc-ink-secondary:    #ABA397;
+  --fc-ink-muted:        #877F73;
+  --fc-border-hairline:  rgba(242, 237, 228, 0.08);
+}
+
+/* Deep Ink Ramp Variant */
+[data-ramp="ink"] {
+  --fc-bg-canvas:        #F4F6FA;
+  --fc-bg-surface:       #FFFFFF;
+  --fc-bg-raised:        #E9EEF5;
+  --fc-ink-primary:      #0E131F;
+  --fc-ink-secondary:    #465063;
+  --fc-ink-muted:        #667185;
+  --fc-border-hairline:  rgba(14, 19, 31, 0.08);
+}
+.dark[data-ramp="ink"],
+[data-theme="dark"][data-ramp="ink"] {
+  --fc-bg-canvas:        #090B10;
+  --fc-bg-surface:       #10141D;
+  --fc-bg-raised:        #181E2B;
+  --fc-ink-primary:      #EEF1F7;
+  --fc-ink-secondary:    #A0A8B8;
+  --fc-ink-muted:        #788196;
+  --fc-border-hairline:  rgba(238, 241, 247, 0.08);
+}
+
+/* 6. Accessibility Safety Valve: Vestibular / Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 7. Typographic Precision, Weight Discipline & GPU Layer Font Stability */
+body,
+.fc-crisp-text {
+  background-color: var(--fc-bg-canvas);
+  color: var(--fc-ink-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.fc-surface {
+  background-color: var(--fc-bg-surface);
+  border: 1px solid var(--fc-border-hairline);
+  box-shadow: var(--fc-inner-highlight);
+}
+
+.fc-tabular,
+table td,
+table th,
+time,
+output,
+[data-numeric="true"] {
+  font-variant-numeric: tabular-nums;
+}
+
+h1, h2, h3, h4,
+.fc-balance {
+  text-wrap: balance;
+  font-weight: 500;
+}
+
+p, li, dd,
+.fc-pretty {
+  text-wrap: pretty;
+}
+
+/* 8. Fitts's Law: Invisible Hit Slop Expansion (>=44x44px target for small icons) */
+.fc-hit-slop {
+  position: relative;
+}
+.fc-hit-slop::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+
+/* 9. Concentric Container Helper */
+.fc-concentric-outer {
+  border-radius: var(--fc-radius-outer);
+  padding: var(--fc-padding-card);
+}
+.fc-concentric-inner {
+  border-radius: var(--fc-radius-inner);
+}
+
+/* 10. Tactile Squash & Stretch Press State
+ *     - Compact buttons use .fc-pressable (scales button by 0.97 on :active)
+ *     - Includes both `transform` and standalone `scale` in transition-property
+ *     - Text-heavy cards use .fc-card-interactive (shifts surface/border so
+ *       small 11-13px glyphs stay on integer pixels without GPU bitmap blur!)
+ */
+.fc-pressable {
+  -webkit-font-smoothing: antialiased;
+  backface-visibility: hidden;
+  transition-property: transform, scale, opacity, background-color, border-color, color, box-shadow;
+  transition-duration: var(--fc-duration-micro);
+  transition-timing-function: var(--fc-ease-out);
+}
+.fc-pressable:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.fc-card-interactive {
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+  transition-property: background-color, border-color, box-shadow;
+  transition-duration: var(--fc-duration-fast);
+  transition-timing-function: var(--fc-ease-out);
+}
+
+/* 11. Origin-Aware Popover Entrance (Scale from 0.97, Never 0) */
+.fc-popover-enter {
+  transform-origin: var(--fc-origin, top center);
+  animation: fc-scale-in var(--fc-duration-fast) var(--fc-ease-out) both;
+}
+@keyframes fc-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 12. Stagger Cascade (Capped at 7 items so lists never lag >250ms) */
+.fc-stagger-item {
+  animation: fc-rise-in var(--fc-duration-base) var(--fc-ease-out) backwards;
+  animation-delay: calc(min(var(--fc-index, 0), 7) * 28ms);
+}
+@keyframes fc-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 13. Exaggerated Feedback: Low-Frequency Error Shake (360ms) */
+.fc-error-shake {
+  animation: fc-shake 360ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+@keyframes fc-shake {
+  0%, 100% { transform: translateX(0); }
+  16%      { transform: translateX(-10px); }
+  33%      { transform: translateX(10px); }
+  50%      { transform: translateX(-6px); }
+  66%      { transform: translateX(6px); }
+  83%      { transform: translateX(-3px); }
+}
+
+/* 14. Hardware Safe Area Padding (Logical Inline Support for RTL/LTR) */
+.fc-safe-bottom {
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  padding-inline-start: max(16px, env(safe-area-inset-left));
+  padding-inline-end: max(16px, env(safe-area-inset-right));
+}
+
+/* 15. Instant Theme Switch Guard (Prevents mismatched transition lag on dark/light toggle) */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
+  animation-duration: 0s !important;
+}
+
+/* 16. Directional Stepper / Wizard Transitions (Logical LTR + RTL Mirroring) */
+.fc-step-forward {
+  animation: fc-slide-from-end var(--fc-duration-base) var(--fc-ease-out) both;
+}
+.fc-step-backward {
+  animation: fc-slide-from-start var(--fc-duration-base) var(--fc-ease-out) both;
+}
+:dir(rtl) .fc-step-forward {
+  animation-name: fc-slide-from-start;
+}
+:dir(rtl) .fc-step-backward {
+  animation-name: fc-slide-from-end;
+}
+@keyframes fc-slide-from-end {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes fc-slide-from-start {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* 17. Smooth Accordion
+ *     - Chromium 129+: native `height: 0 -> auto` via `interpolate-size: allow-keywords`
+ *     - Safari / Firefox universal fallback: `.fc-accordion-grid` (`0fr -> 1fr`)
+ */
+.fc-accordion-content {
+  height: 0;
+  overflow: clip;
+  transition: height var(--fc-duration-base) var(--fc-ease-in-out),
+              opacity var(--fc-duration-fast) var(--fc-ease-out);
+  opacity: 0;
+}
+.fc-accordion-open > .fc-accordion-content,
+.fc-accordion-content[data-state="open"] {
+  height: auto;
+  opacity: 1;
+}
+
+.fc-accordion-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--fc-duration-base) var(--fc-ease-out);
+}
+.fc-accordion-grid[data-state="open"] {
+  grid-template-rows: 1fr;
+}
+.fc-accordion-grid > div {
+  overflow: hidden;
+}
+
+/* 18. Modern Thin Arrow-Free Scrollbars (Replaces Chunky Classic Windows Track) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 132, 142, 0.35) transparent;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 132, 142, 0.32);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(128, 132, 142, 0.55);
+}
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* 19. Clean Action Bar & Non-Muddy Disabled Primary Button */
+.fc-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--fc-space-4);
+  padding: var(--fc-space-3) var(--fc-space-4);
+  background-color: var(--fc-bg-surface);
+  border: 1px solid var(--fc-border-hairline);
+  border-radius: 14px;
+}
+.fc-btn-primary:disabled {
+  background-color: var(--fc-bg-raised);
+  color: var(--fc-ink-muted);
+  border: 1px solid var(--fc-border-hairline);
+  opacity: 1; /* Avoid muddy half-opacity accent rectangles */
+  cursor: not-allowed;
+}
+
+/* 20. Accessible Keyboard Focus Ring (Visible on Keyboard Nav Only) */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--fc-accent);
+  outline-offset: 2px;
+}
+
+/* 21. Touch-Safe Hover Action Reveal (Always Accessible When Hover Unavailable) */
+@media (hover: hover) and (pointer: fine) {
+  .fc-hover-reveal {
+    opacity: 0;
+    transition: opacity var(--fc-duration-micro) var(--fc-ease-out);
+  }
+  .fc-hover-parent:hover .fc-hover-reveal,
+  .fc-hover-parent:focus-within .fc-hover-reveal {
+    opacity: 1;
+  }
+}
+
+/* 22. Zero-CLS Media Frame & Dark-Mode Stark Image Softening */
+.fc-media-frame {
+  overflow: hidden;
+  background-color: var(--fc-bg-raised);
+}
+.fc-media-frame > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.dark .fc-media-frame > img[data-dim-dark="true"],
+[data-theme="dark"] .fc-media-frame > img[data-dim-dark="true"] {
+  filter: brightness(0.92);
+}
+
+/* 23. Modern Tactile Controls: Option Cards, Custom Checkboxes/Radios & Inputs
+ *     - Eliminates stark white native checkboxes in dark mode
+ *     - Aligns indicator to line 1 cap-height (`align-items: flex-start`)
+ *     - Tactile hover + touch response (`<120ms`) with zero text blur
+ */
+button,
+a,
+label,
+input,
+select,
+textarea,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fc-input {
+  width: 100%;
+  min-height: var(--fc-control-default);
+  padding: var(--fc-space-2) var(--fc-space-3);
+  border-radius: 10px;
+  background-color: var(--fc-bg-surface);
+  border: 1px solid var(--fc-border-hairline);
+  color: var(--fc-ink-primary);
+  transition: border-color var(--fc-duration-micro) var(--fc-ease-out),
+              background-color var(--fc-duration-micro) var(--fc-ease-out);
+}
+.fc-input::placeholder {
+  color: var(--fc-ink-muted);
+}
+@media (hover: hover) and (pointer: fine) {
+  .fc-input:hover:not(:disabled):not(:focus) {
+    border-color: color-mix(in srgb, var(--fc-ink-primary) 18%, transparent);
+  }
+}
+
+.fc-option-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--fc-space-3);
+  padding: 14px var(--fc-space-4);
+  border-radius: 12px;
+  background-color: var(--fc-bg-surface);
+  border: 1px solid var(--fc-border-hairline);
+  cursor: pointer;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color var(--fc-duration-micro) var(--fc-ease-out),
+              border-color var(--fc-duration-micro) var(--fc-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .fc-option-card:hover {
+    background-color: var(--fc-bg-raised);
+    border-color: color-mix(in srgb, var(--fc-ink-primary) 16%, transparent);
+  }
+}
+.fc-option-card:has(input:checked) {
+  border-color: color-mix(in srgb, var(--fc-accent) 45%, transparent);
+}
+.fc-option-card:active .fc-checkbox,
+.fc-option-card:active .fc-radio {
+  transform: scale(0.92);
+}
+
+.fc-checkbox,
+.fc-radio {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px; /* Optical alignment with line 1 title cap-height */
+  background-color: var(--fc-bg-raised);
+  border: 1.5px solid color-mix(in srgb, var(--fc-ink-primary) 22%, transparent);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background-color var(--fc-duration-micro) var(--fc-ease-out),
+              border-color var(--fc-duration-micro) var(--fc-ease-out),
+              transform var(--fc-duration-micro) var(--fc-ease-out);
+}
+.fc-checkbox {
+  border-radius: 5px;
+}
+.fc-radio {
+  border-radius: 9999px;
+}
+.fc-checkbox::after {
+  content: "";
+  width: 9px;
+  height: 5px;
+  border-left: 2px solid var(--fc-accent-ink);
+  border-bottom: 2px solid var(--fc-accent-ink);
+  transform: translateY(-1px) rotate(-45deg) scale(0.5);
+  opacity: 0;
+  transition: transform var(--fc-duration-micro) var(--fc-ease-out),
+              opacity var(--fc-duration-micro) var(--fc-ease-out);
+}
+.fc-radio::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background-color: var(--fc-accent-ink);
+  transform: scale(0.4);
+  opacity: 0;
+  transition: transform var(--fc-duration-micro) var(--fc-ease-out),
+              opacity var(--fc-duration-micro) var(--fc-ease-out);
+}
+.fc-checkbox:checked,
+.fc-radio:checked {
+  background-color: var(--fc-accent);
+  border-color: var(--fc-accent);
+}
+.fc-checkbox:checked::after {
+  transform: translateY(-1px) rotate(-45deg) scale(1);
+  opacity: 1;
+}
+.fc-radio:checked::after {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* 24. Restrained Kinetic Craft Primitives ("Slightly Alive, Zero Slop") */
+
+/* A. Vertical Ghost-Text Roll CTA */
+.fc-ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.fc-ghost-viewport {
+  display: inline-block;
+  height: 20px;
+  line-height: 20px;
+  overflow: hidden;
+}
+.fc-ghost-track {
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--fc-duration-base) var(--fc-ease-out);
+}
+.fc-ghost-track > span:last-child {
+  color: var(--fc-accent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .fc-ghost-btn:hover .fc-ghost-track {
+    transform: translateY(-20px);
+  }
+}
+.fc-ghost-btn:focus-visible .fc-ghost-track {
+  transform: translateY(-20px);
+}
+
+/* B. Mechanical Keycap Travel */
+.fc-keycap {
+  background-color: var(--fc-bg-raised);
+  border: 1px solid color-mix(in srgb, var(--fc-ink-primary) 16%, transparent);
+  box-shadow: var(--fc-inner-highlight), 0 3px 0 0 color-mix(in srgb, var(--fc-ink-primary) 18%, transparent);
+  transition: transform 85ms var(--fc-ease-out), box-shadow 85ms var(--fc-ease-out), border-color var(--fc-duration-micro) var(--fc-ease-out);
+}
+.fc-keycap:active,
+.fc-keycap[data-pressed="true"] {
+  transform: translateY(2px);
+  box-shadow: var(--fc-inner-highlight), 0 1px 0 0 color-mix(in srgb, var(--fc-ink-primary) 18%, transparent);
+}
+
+/* C. Width-Locked Copy -> Check Icon Morph */
+.fc-copy-icon-box {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.fc-copy-icon-box > svg {
+  position: absolute;
+  inset: 0;
+  transition: opacity var(--fc-duration-fast) var(--fc-ease-out), transform var(--fc-duration-fast) var(--fc-ease-out);
+}
+.fc-copy-icon-box > .fc-icon-check {
+  opacity: 0;
+  transform: scale(0.5);
+  color: var(--fc-status-success);
+}
+[data-copied="true"] .fc-copy-icon-box > .fc-icon-copy {
+  opacity: 0;
+  transform: scale(0.5);
+}
+[data-copied="true"] .fc-copy-icon-box > .fc-icon-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* D. 1px Hairline Proximity Spotlight Cell */
+.fc-hairline-spot {
+  position: relative;
+  padding: 1px;
+  border-radius: 10px;
+  background: var(--fc-border-hairline);
+  overflow: hidden;
+}
+.fc-hairline-spot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(110px circle at var(--sx, -200px) var(--sy, -200px), var(--fc-accent), transparent 65%);
+  pointer-events: none;
+}
+.fc-hairline-spot-inner {
+  position: relative;
+  z-index: 1;
+  border-radius: 9px;
+  background-color: var(--fc-bg-surface);
+}
+
+/* E. Directional Gliding Segmented Control */
+.fc-segmented {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 10px;
+  background-color: var(--fc-bg-surface);
+  border: 1px solid var(--fc-border-hairline);
+}
+.fc-seg-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  border-radius: 6px;
+  background-color: var(--fc-bg-raised);
+  border: 1px solid color-mix(in srgb, var(--fc-ink-primary) 12%, transparent);
+  transition: transform 200ms var(--fc-ease-out), width 200ms var(--fc-ease-out);
+  pointer-events: none;
+}
+.fc-seg-btn {
+  position: relative;
+  z-index: 1;
+  height: 30px;
+  padding-inline: 12px;
+  background: transparent;
+  border: none;
+  color: var(--fc-ink-secondary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: color var(--fc-duration-micro) var(--fc-ease-out);
+}
+.fc-seg-btn[aria-selected="true"] {
+  color: var(--fc-ink-primary);
+}
+
+/* F. Tactile Micro-Grain & Top Scroll Progress Hairline (Showcase Mode) */
+.fc-grain-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.fc-scroll-progress {
+  position: fixed;
+  top: 0;
+  inset-inline: 0;
+  height: 2px;
+  background-color: var(--fc-accent);
+  transform-origin: start center;
+  transform: scaleX(var(--scroll-progress, 0));
+  pointer-events: none;
+  z-index: 60;
+}

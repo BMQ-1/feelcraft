@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 28" width="880" height="28" fill="none">
+  <style>
+    .shuttle {
+      animation: fc-glide 4.4s cubic-bezier(0.22, 1, 0.36, 1) infinite alternate;
+    }
+    .pulse-ring {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: fc-ring 2.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+    }
+    @keyframes fc-glide {
+      0%, 10%   { transform: translateX(0px); }
+      90%, 100% { transform: translateX(640px); }
+    }
+    @keyframes fc-ring {
+      0%   { transform: scale(0.8); opacity: 0.75; }
+      100% { transform: scale(2.1); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .shuttle, .pulse-ring { animation: none; }
+      .shuttle { transform: translateX(320px); }
+    }
+  </style>
+
+  <!-- Neutral Architectural Hairline (Readable in Both Light & Dark GitHub Themes) -->
+  <line x1="20" y1="14" x2="860" y2="14" stroke="#80848E" stroke-opacity="0.28" stroke-width="1"/>
+
+  <!-- Precision Caliper Ticks -->
+  <g stroke="#80848E" stroke-opacity="0.45" stroke-width="1" stroke-linecap="round">
+    <line x1="20"  y1="10" x2="20"  y2="18"/>
+    <line x1="120" y1="11" x2="120" y2="17"/>
+    <line x1="280" y1="11" x2="280" y2="17"/>
+    <line x1="440" y1="8"  x2="440" y2="20"/>
+    <line x1="600" y1="11" x2="600" y2="17"/>
+    <line x1="760" y1="11" x2="760" y2="17"/>
+    <line x1="860" y1="10" x2="860" y2="18"/>
+  </g>
+
+  <!-- Active Kinematic Travel Span -->
+  <line x1="120" y1="14" x2="760" y2="14" stroke="#E03C1F" stroke-opacity="0.25" stroke-width="1.5"/>
+
+  <!-- Gliding Signal Vermilion Detent Shuttle -->
+  <g class="shuttle">
+    <line x1="100" y1="14" x2="140" y2="14" stroke="#E03C1F" stroke-width="2" stroke-linecap="round"/>
+    <circle class="pulse-ring" cx="120" cy="14" r="6" stroke="#E03C1F" stroke-width="1.2"/>
+    <circle cx="120" cy="14" r="3.5" fill="#E03C1F"/>
+  </g>
+</svg>

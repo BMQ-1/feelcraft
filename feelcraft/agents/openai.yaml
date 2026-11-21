@@ -1,0 +1,6 @@
+interface:
+  display_name: "Feelcraft"
+  short_description: "Universal UX laws, <300ms motion physics, and 20 high-craft product details for all agents"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+  default_prompt: "Use $feelcraft on this project to audit and implement missing UX laws, <300ms motion physics, and expensive product details."

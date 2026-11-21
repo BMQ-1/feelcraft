@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 28" width="880" height="28" fill="none">
+  <style>
+    .wave-flow {
+      stroke-dasharray: 24 14;
+      animation: fc-dash 6s linear infinite;
+    }
+    .dot-left, .dot-right {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: fc-breathe 3.2s cubic-bezier(0.22, 1, 0.36, 1) infinite alternate;
+    }
+    @keyframes fc-dash {
+      from { stroke-dashoffset: 0; }
+      to   { stroke-dashoffset: -76; }
+    }
+    @keyframes fc-breathe {
+      from { transform: scale(0.85); opacity: 0.6; }
+      to   { transform: scale(1.15); opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .wave-flow, .dot-left, .dot-right { animation: none; }
+    }
+  </style>
+
+  <!-- Baseline Hairline -->
+  <line x1="24" y1="14" x2="856" y2="14" stroke="#80848E" stroke-opacity="0.22" stroke-width="1"/>
+
+  <!-- Harmonic Contour Flow -->
+  <path class="wave-flow" d="M 60 14 C 190 4, 310 24, 440 14 C 570 4, 690 24, 820 14" stroke="#E03C1F" stroke-opacity="0.7" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M 60 14 C 190 23, 310 5, 440 14 C 570 23, 690 5, 820 14" stroke="#80848E" stroke-opacity="0.4" stroke-width="1" stroke-linecap="round"/>
+
+  <!-- Anchor Detents -->
+  <circle class="dot-left" cx="60" cy="14" r="3" fill="#E03C1F"/>
+  <circle cx="440" cy="14" r="2.5" fill="#80848E" fill-opacity="0.65"/>
+  <circle class="dot-right" cx="820" cy="14" r="3" fill="#E03C1F"/>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="512" height="512" fill="none">
+  <!-- Warm Architectural Paper Surface (Swiss Grid Edition) -->
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="#F3EFE6" stroke="#D8D2C5" stroke-width="2"/>
+  <rect x="18" y="18" width="220" height="220" rx="46" stroke="#141413" stroke-opacity="0.08" stroke-width="1.5"/>
+
+  <!-- Precision Technical Grid Lines -->
+  <g stroke="#141413" stroke-opacity="0.08" stroke-width="1.5">
+    <line x1="64" y1="20" x2="64" y2="236"/>
+    <line x1="128" y1="20" x2="128" y2="236" stroke-dasharray="4 4"/>
+    <line x1="192" y1="20" x2="192" y2="236"/>
+    <line x1="20" y1="64" x2="236" y2="64"/>
+    <line x1="20" y1="128" x2="236" y2="128" stroke-dasharray="4 4"/>
+    <line x1="20" y1="192" x2="236" y2="192"/>
+  </g>
+
+  <!-- Tangent Control Handles (Cubic-Bezier Easing Curve) -->
+  <line x1="64" y1="192" x2="148" y2="192" stroke="#E03C1F" stroke-width="2.5" stroke-dasharray="5 4"/>
+  <line x1="192" y1="64" x2="108" y2="64" stroke="#E03C1F" stroke-width="2.5" stroke-dasharray="5 4"/>
+
+  <!-- Primary Slow-In / Slow-Out Kinematic Curve -->
+  <path d="M 64 192 C 148 192, 108 64, 192 64" stroke="#141413" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Handle Control Nodes -->
+  <rect x="141" y="185" width="14" height="14" rx="3" fill="#F3EFE6" stroke="#E03C1F" stroke-width="3"/>
+  <rect x="101" y="57" width="14" height="14" rx="3" fill="#F3EFE6" stroke="#E03C1F" stroke-width="3"/>
+
+  <!-- Origin Awareness + Hit Slop Reticle (Bottom-Left Start Anchor) -->
+  <circle cx="64" cy="192" r="22" stroke="#E03C1F" stroke-width="2" stroke-dasharray="4 3"/>
+  <circle cx="64" cy="192" r="9" fill="#141413"/>
+  <circle cx="64" cy="192" r="4" fill="#F3EFE6"/>
+
+  <!-- Destination Snap Anchor (Top-Right Peak State) -->
+  <circle cx="192" cy="64" r="12" fill="#E03C1F"/>
+  <circle cx="192" cy="64" r="4.5" fill="#F3EFE6"/>
+
+  <!-- Swiss Spec Micro-Label -->
+  <text x="36" y="46" fill="#141413" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700" letter-spacing="0.06em">0.22, 1.0</text>
+  <text x="156" y="218" fill="#E03C1F" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700" letter-spacing="0.06em">&lt;300ms</text>
+</svg>

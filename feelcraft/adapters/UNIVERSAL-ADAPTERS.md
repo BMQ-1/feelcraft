@@ -1,0 +1,33 @@
+# Feelcraft — Universal Adapter Rules (`CLAUDE.md` / `AGENTS.md` / `.cursor/rules`)
+
+Drop the snippet below into any workspace's `CLAUDE.md`, `AGENTS.md`, or `.cursor/rules/feelcraft.mdc` when an agent does not natively load `SKILL.md` directories:
+
+```markdown
+## Feelcraft (Standalone Visual Anti-Slop, UX Laws, Motion Physics & Tactile Product Craft)
+
+Whenever building, refactoring, or reviewing user-facing interfaces, APIs, or CLIs, apply Step 0 + the 3 Feelcraft Gates:
+
+0. **Direction, Surface Mode & Interactive Choice Gate (Anti-Sameness):**
+   - Identify **Surface Mode**: `Operate` (apps, dashboards, editors, CLI — `95%` quiet precision + `1` tactile micro-detail, zero animated background loops) vs. `Showcase` (landing pages, launches, portfolios — calm neutral canvas + up to `1` procedural architectural backdrop capped at `DPR<=2`, `<=30fps`, `prefers-reduced-motion` freeze + `1–2` physical focal details).
+   - Set a **3-line Direction** (*World & Material*, *Custom Ramp + 1 Authentic Accent*, *1–2 Signature Kinetic Motifs* such as a gliding segmented pill, width-locked `Copy -> Check` morph, `1px` hairline spotlight, `±3.5°` specular foil, or `tabular-nums` odometer) so apps never look like identical templates.
+   - **Ask when multiple great options fit:** On greenfield apps, landings, or redesigns where 2–3 strong Directions, Sidebar Architectures, or Signature Motifs fit equally well and the user hasn't specified a style, ask 1–2 concise multiple-choice options before implementing.
+
+1. **Visual, Color & Frequency Gate (Restraint First):**
+   - **Color & Surface Physics:** Build from one tinted neutral ramp (`Graphite`, `Warm Stone`, or `Deep Ink`), set `color-scheme: dark`/`light` + thin arrow-free scrollbars (`scrollbar-width: thin`, `8px` pill thumb), create depth via stepped luminance + `1px` hairlines (`6–10%`), enforce 3 ink contrast tiers (`>=10:1`, `>=5.5:1`, `>=4.5:1`), and reserve **1 accent color** for at most 1 primary CTA per viewport (keep active nav rows neutral raised; never paint disabled primary buttons as muddy half-opacity accents; keep primary commit buttons on the trailing right of footers/bars). Ban purple/indigo-to-cyan gradients, **ChatGPT green slop (both emerald/teal `#10a37f`/`#00ff88` AND dark olive-tinted surfaces with pastel lime/chartreuse `lime-200/300/400` buttons, logo tiles, and active pills — keep green strictly for semantic success states)**, gradient text, neon glows, floating background blobs, rainbow icon boxes, and pure `#000000`+`#FFFFFF` harshness.
+   - **Spacing, Type, Icons & Copy:** Use a `4px` spacing grid (`32/36/44px` control heights, inner group gap < outer section gap, aligned columns). Use weights `400` and `500` (`600` max; ban `700–900` headings), sentence case everywhere (ban wide-tracked `UPPERCASE`), one consistent `16–18px` line-icon set (`1.5px` stroke, zero emoji in chrome), and plain specific copy with comparison baselines (`+12% vs last month`, zero exclamation marks or AI hype words).
+   - **Frequency of Use (Emil Kowalski's Rule):** High-frequency actions (>10x/session: keyboard nav, command menu, row hover, tabs, adjacent warm tooltips) use `0–120ms` transitions with zero bounce or stagger.
+   - **Medium-Frequency Motion (`<300ms`):** Popovers, modals, drawers, and toasts animate in `160–260ms` (exits `140–180ms`) using `cubic-bezier(0.22, 1, 0.36, 1)` (slow-in/slow-out), anchored to the trigger `transform-origin` (origin-aware), starting from `scale(0.97)` with `opacity: 0` (never `scale(0)`), and remain interruptible mid-flight with spring release-velocity handoff.
+   - **Niche Mechanics:** Directional Steppers slide from the direction of travel (`+20px` forward, `-20px` back). Accordions animate smoothly via `:root { interpolate-size: allow-keywords }` + `grid-template-rows: 0fr -> 1fr` Safari fallback. Theme Switches lock transitions via `.theme-switching * { transition: none !important }` for 2 animation frames. Always include a `@media (prefers-reduced-motion: reduce)` safety override. Never use `transition-all` or animate layout geometry (`width`, `height`, `top`, `left`).
+
+2. **Latency Gate (Doherty Threshold `<400ms`):**
+   - Mutations apply **Optimistic Updates** (`0ms`) with rollback on failure, use **Undo Toasts** (`5s` with `beforeunload` keepalive flush) instead of blocking confirmation modals for reversible deletes, and send **Idempotency Keys**.
+   - Reads use **Stale-While-Revalidate (SWR)** and **Hover-Intent Prefetching** (`onPointerEnter`).
+   - Cold loads use zero-CLS **Skeleton Loaders** and **BlurHash/LQIP** image placeholders.
+
+3. **Motor, Cognitive & Typographic Precision:**
+   - **Tabular Numbers & Anti-Blur Fonts:** Always set `font-variant-numeric: tabular-nums` (`tabular-nums`) on numbers, prices, counters, timers, and tables. Lock `-webkit-font-smoothing: antialiased` on `body`, never `scale()` text-heavy cards on hover/click, never center text with `translate(-50%, -50%)`, and never change `font-weight` on `:hover`/`:active`.
+   - **Balanced Copy:** Set `text-wrap: balance` on headings and `text-wrap: pretty` on body copy.
+   - **Concentric Corners:** Nested border radii obey `R_outer = R_inner + padding` (min `4px`).
+   - **Ergonomics & Navigation:** Expand small controls to `>=44x44px` via invisible **Hit Slop** (`::after { inset: -8px }`), respect `env(safe-area-inset-*)` and CSS logical properties (`padding-inline`, `text-align: start`, RTL-mirrored transitions), style `:focus-visible` rings + modal focus trapping + `aria-live` toasts, style custom `appearance: none` checkboxes/radios top-aligned to line 1 cap-height (`items-start`) inside full-card `<label>`s with `-webkit-tap-highlight-color: transparent` and `<120ms` hover/touch surface micro-feedback, model mutually exclusive options as single radio/segmented controls, gate hover-only actions inside `@media (hover: hover)` so touch screens stay usable, validate forms lazily (`reward early, punish late`), protect hover submenus with the **Safe Submenu Pointer Triangle**, delay only the first tooltip (`400ms`) with `0ms` skip-delay on warm sibling tooltips, support **Swipe-to-Dismiss Sheets** and carousels with hyperbolic rubber-band resistance (`84 * (over / (over + 150))`), choose intentionally from the **8 Side Navigation Architectures** (`Overlay`, `Push`, `Reveal`, `Icon Rail`, `Expanding Rail`, `Accordion`, `Two-Level`, `Floating Panel`), and expose a **`Cmd+K` / `Ctrl+K` Command Menu** with `<kbd>` **Shortcut Hints**.
+   - **Postel's Law:** Strip spaces/dashes from formatted inputs silently; support `autocomplete="one-time-code"` and multi-box paste splitting on OTP inputs.
+```
