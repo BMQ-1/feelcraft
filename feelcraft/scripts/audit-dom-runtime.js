@@ -4,11 +4,11 @@
  * Chrome DevTools MCP, or the browser console to measure rendered UX craft:
  *   1. Fitts's Law / Hit Slop failures (interactive targets < 32x32px)
  *   2. Missing `tabular-nums` on elements rendering digits/prices/timers
- *   3. Multi-line `h1–h4` headings missing `text-wrap: balance` & heavy `>=700` weights
+ *   3. Multi-line `h1–h4` headings missing `text-wrap: balance`
  *   4. Concentric Corner Radius violations (`R_inner > R_outer - padding`)
  *   5. Motion violations (`transition-property: all`, any duration > 320ms, infinite loops)
- *   6. Green/Olive/Purple-tinted dark surfaces & chunky native scrollbars
- *   7. WCAG AA text contrast failures (< 4.5:1 body / < 3:1 large text)
+ *   6. Chunky unstyled native scrollbars in scrollable containers
+ *   7. WCAG 2.2 AA text contrast failures (< 4.5:1 normal text / < 3:1 large text: >=24px or >=18.66px bold)
  */
 
 (() => {
@@ -16,10 +16,8 @@
     smallHitTargets: [],
     missingTabularNums: [],
     unbalancedHeadings: [],
-    heavyHeadings: [],
     nonConcentricCorners: [],
     motionViolations: [],
-    tintedDarkSurfaces: [],
     chunkyScrollbars: [],
     lowContrastText: [],
   };
@@ -59,14 +57,36 @@
     return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
   };
 
+  const blendRgba = (fg, bg) => {
+    const a = fg.a + bg.a * (1 - fg.a);
+    if (a <= 0) return { r: 255, g: 255, b: 255, a: 1 };
+    return {
+      r: Math.round((fg.r * fg.a + bg.r * bg.a * (1 - fg.a)) / a),
+      g: Math.round((fg.g * fg.a + bg.g * bg.a * (1 - fg.a)) / a),
+      b: Math.round((fg.b * fg.a + bg.b * bg.a * (1 - fg.a)) / a),
+      a,
+    };
+  };
+
   const resolveEffectiveBg = (el) => {
+    const layers = [];
     let cur = el;
     while (cur && cur.nodeType === 1) {
       const bg = parseRgb(window.getComputedStyle(cur).backgroundColor);
-      if (bg && bg.a >= 0.85) return bg;
+      if (bg && bg.a > 0) {
+        layers.push(bg);
+        if (bg.a >= 0.99) break;
+      }
       cur = cur.parentElement;
     }
-    return { r: 255, g: 255, b: 255, a: 1 };
+    const rootScheme = window.getComputedStyle(document.documentElement).colorScheme;
+    let acc = rootScheme === 'dark'
+      ? { r: 15, g: 16, b: 18, a: 1 }
+      : { r: 255, g: 255, b: 255, a: 1 };
+    for (let i = layers.length - 1; i >= 0; i--) {
+      acc = blendRgba(layers[i], acc);
+    }
+    return acc;
   };
 
   const parseDurationsMs = (str) =>
@@ -121,23 +141,29 @@
     }
 
     const fg = parseRgb(cs.color);
-    if (fg && fg.a >= 0.85) {
+    if (fg && fg.a > 0) {
       const bg = resolveEffectiveBg(el);
-      const ratio = contrastRatio(fg, bg);
+      const effectiveFg = fg.a < 1 ? blendRgba(fg, bg) : fg;
+      const ratio = contrastRatio(effectiveFg, bg);
       const fontSize = parseFloat(cs.fontSize) || 14;
-      const minRatio = fontSize >= 18 ? 3.0 : 4.5;
+      const fontWeight = parseInt(cs.fontWeight, 10) || (cs.fontWeight === 'bold' ? 700 : 400);
+      // WCAG 2.2 SC 1.4.3 Large Text: >= 18pt (24px) regular OR >= 14pt (~18.66px) bold (>=700)
+      const isLargeText = fontSize >= 24 || (fontSize >= 18.66 && fontWeight >= 700);
+      const minRatio = isLargeText ? 3.0 : 4.5;
       if (ratio < minRatio) {
         results.lowContrastText.push({
           element: describeEl(el),
           ratio: Number(ratio.toFixed(2)),
           required: minRatio,
-          fix: 'Increase text contrast to meet >=4.5:1 (>=3.0:1 for >=18px headings).',
+          fontSize: `${Math.round(fontSize * 10) / 10}px`,
+          fontWeight,
+          fix: 'Increase text contrast to meet WCAG AA >=4.5:1 (>=3.0:1 for large text: >=24px or >=18.66px bold).',
         });
       }
     }
   }
 
-  // 3. Multi-line Balanced Headlines (`h1-h4`) & Heavy `>=700` Heading Weights
+  // 3. Multi-line Balanced Headlines (`h1-h4`)
   document.querySelectorAll('h1, h2, h3, h4').forEach((el) => {
     const rect = el.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
@@ -148,14 +174,6 @@
       results.unbalancedHeadings.push({
         element: describeEl(el),
         fix: 'Add `text-wrap: balance` (`text-balance`).',
-      });
-    }
-    const weight = parseInt(cs.fontWeight, 10);
-    if (weight >= 700) {
-      results.heavyHeadings.push({
-        element: describeEl(el),
-        fontWeight: weight,
-        fix: 'Use weights 400 and 500 (600 max); derive hierarchy from size and ink contrast.',
       });
     }
   });
@@ -217,30 +235,9 @@
     }
   });
 
-  // 6. Tinted Dark Surfaces (Olive/Green & Purple/Indigo AI Slop) + Chunky Scrollbars
-  const seenBgColors = new Set();
+  // 6. Unstyled Chunky Scrollbars
   document.querySelectorAll('body, main, aside, nav, section, header, div').forEach((el) => {
     const cs = window.getComputedStyle(el);
-    const bg = parseRgb(cs.backgroundColor);
-    if (bg && bg.a >= 0.5) {
-      const { r, g, b } = bg;
-      const maxCh = Math.max(r, g, b);
-      const isOliveGreen = maxCh <= 95 && g - r >= 6 && g - b >= 6;
-      const isPurpleIndigo = maxCh <= 95 && b - g >= 12 && r - g >= 4;
-      if (isOliveGreen || isPurpleIndigo) {
-        const key = `${r},${g},${b}`;
-        if (!seenBgColors.has(key)) {
-          seenBgColors.add(key);
-          results.tintedDarkSurfaces.push({
-            element: describeEl(el),
-            kind: isOliveGreen ? 'olive/green-tinted dark surface' : 'purple/indigo-tinted dark surface',
-            rgb: `rgb(${r}, ${g}, ${b})`,
-            fix: 'Use a neutral luminance ramp (Graphite #0F1012/#16181C, Warm Stone #12110F/#191715, or Deep Ink #090B10/#10141D).',
-          });
-        }
-      }
-    }
-
     if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight) {
       const sbWidth = el.offsetWidth - el.clientWidth;
       if (sbWidth >= 14 && cs.scrollbarWidth !== 'thin') {
@@ -258,10 +255,8 @@
       smallHitTargets: results.smallHitTargets.length,
       missingTabularNums: results.missingTabularNums.length,
       unbalancedHeadings: results.unbalancedHeadings.length,
-      heavyHeadings: results.heavyHeadings.length,
       nonConcentricCorners: results.nonConcentricCorners.length,
       motionViolations: results.motionViolations.length,
-      tintedDarkSurfaces: results.tintedDarkSurfaces.length,
       chunkyScrollbars: results.chunkyScrollbars.length,
       lowContrastText: results.lowContrastText.length,
     },
@@ -269,10 +264,8 @@
       smallHitTargets: results.smallHitTargets.slice(0, 12),
       missingTabularNums: results.missingTabularNums.slice(0, 12),
       unbalancedHeadings: results.unbalancedHeadings.slice(0, 10),
-      heavyHeadings: results.heavyHeadings.slice(0, 10),
       nonConcentricCorners: results.nonConcentricCorners.slice(0, 10),
       motionViolations: results.motionViolations.slice(0, 12),
-      tintedDarkSurfaces: results.tintedDarkSurfaces.slice(0, 10),
       chunkyScrollbars: results.chunkyScrollbars.slice(0, 8),
       lowContrastText: results.lowContrastText.slice(0, 12),
     },

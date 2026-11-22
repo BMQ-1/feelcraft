@@ -1,6 +1,6 @@
-# 04 · Universal Domain Adapters (Mobile, Backend/API, CLI/TUI, QA Agents)
+# 04 · Platform & Boundary Adapters (Mobile, Frontend-Adjacent APIs, CLI/TUI, Desktop)
 
-Feelcraft is built for **all sorts of agents**, not only browser frontend agents. When an agent operates in a non-web domain, translate the 55+ Feelcraft principles using the adapters below.
+Feelcraft is primarily a **UI, interaction, and client ergonomics skill**. When working across native mobile, terminal interfaces, or the API endpoints that directly back interactive UI flows, use the adapters below.
 
 ---
 
@@ -24,19 +24,19 @@ Feelcraft is built for **all sorts of agents**, not only browser frontend agents
 
 ---
 
-## 2. Backend, API & Full-Stack Agents
+## 2. Frontend-Supporting API Contracts (Full-Stack Boundary)
 
-- **Doherty Threshold (`<400ms`) at the System Boundary:**
-  - Reads should target `<100ms` p95 via indexed queries, edge/memory caching, and HTTP `Cache-Control: max-age=0, s-maxage=60, stale-while-revalidate=86400`.
-  - Long-running mutations (`>400ms` — PDF generation, AI inference, bulk import, email dispatch) must return `202 Accepted` immediately with an operation ID and stream status via SSE/WebSockets or pollable status endpoints.
-- **Idempotency Middleware (Duplicate-Request Guard):**
-  - Accept `Idempotency-Key` header on `POST`/`PATCH` routes. Store `{ key, payloadHash, status, responseBody }` with a `24h` TTL. If an identical key arrives while in flight, return `409 Conflict` or await the active promise; if completed, replay the cached status and body.
-- **Undo Grace Window (Soft Delete Architecture):**
-  - Support Undo Toasts by writing `deleted_at = NOW()` (or queuing hard deletion by `10s–30s`) and exposing a lightweight `POST /items/:id/restore` endpoint.
-- **Postel's Law at API Parsers:**
-  - Normalize input strings at schema boundaries (`.trim()`, Unicode NFC normalization, flexible phone/postal whitespace stripping) while returning strict, deterministic, strongly-typed payloads (ISO-8601 UTC timestamps, integer minor currency units, `camelCase` or `snake_case` consistently).
-- **Miller's Law in Pagination:**
-  - Default cursor pagination pages to `20–25` items and support field selection or summary projections so initial payloads stay fast and digestible.
+Frontend UX patterns like Optimistic UI, 5-second Undo Toasts, and Doherty `<400ms` transitions require three specific contracts at the API boundary:
+
+- **Doherty Threshold (`<400ms`) & Async Handoff:**
+  - Interactive reads should target fast p95 latency via indexed queries and `Cache-Control: stale-while-revalidate` where appropriate.
+  - Long-running mutations (`>400ms` — PDF generation, AI inference, bulk import) should return `202 Accepted` immediately with an operation ID and stream progress via SSE/WebSockets or a pollable status endpoint so the UI never hangs.
+- **Idempotency Support (Safe Client Retries):**
+  - Accept an `Idempotency-Key` header on state-mutating `POST`/`PATCH`/`DELETE` routes so optimistic UI retries or `pagehide`/`beforeunload` keepalive flushes never create duplicate records.
+- **Undo Grace Window (Soft Delete / Deferred Commit):**
+  - Back frontend Undo Toasts either by deferring the client request for `5000ms` (with `pagehide`/`beforeunload` keepalive flush) or by writing `deleted_at = NOW()` on the server and exposing a lightweight `POST /items/:id/restore` endpoint.
+- **Postel's Law at Input Boundaries:**
+  - Normalize human-entered strings at schema boundaries (`.trim()`, Unicode NFC normalization, flexible phone/postal whitespace stripping) rather than rejecting valid user input for formatting whitespace.
 
 ---
 
@@ -47,30 +47,26 @@ Feelcraft is built for **all sorts of agents**, not only browser frontend agents
 - **Frequency of Use & Quiet Output:**
   - High-frequency CLI commands (`status`, `list`, `diff`) must output clean, parseable text with zero artificial typing delays or ASCII splash banners.
 - **Undo & Forgiveness over Modal `[y/N]` Prompts:**
-  - Support `--dry-run` on every mutating command.
-  - For reversible operations, perform the action, log the exact rollback command (`To undo, run: tool undo <tx-id>`), and store a local backup snapshot rather than nagging the user with 5 sequential confirmation prompts.
+  - Support `--dry-run` on mutating commands.
+  - For reversible operations, log the exact rollback command (`To undo, run: tool undo <tx-id>`) rather than chaining multiple confirmation prompts.
 - **Postel's Law in Argument Parsing:**
   - Allow flags before or after positional arguments (`tool build --watch dir` and `tool build dir --watch`).
-  - On mistyped subcommands, calculate Levenshtein distance and suggest the closest command (`Did you mean 'deploy'?`).
+  - On mistyped subcommands, suggest the closest command (`Did you mean 'deploy'?`).
 - **Tabular Numbers & Visual Hierarchy:**
-  - Right-align all numeric columns (durations, byte sizes, counts, percentages) in fixed-width tabular columns so digits align vertically.
+  - Right-align numeric columns (durations, byte sizes, counts, percentages) in fixed-width tabular columns so digits align vertically.
   - Respect `NO_COLOR` and `--json` flags automatically when stdout is piped (`!process.stdout.isTTY`).
 - **Interruptible Execution:**
   - Trap `SIGINT` (`Ctrl+C`) cleanly: restore terminal cursor visibility, clean up temp files, and print a single clean cancellation line instead of an unhandled stack trace.
 
 ---
 
-## 4. AI, LLM Streaming & Conversational Agents
+## 4. AI Streaming & Conversational UIs
 
-- **Doherty Threshold for Token Streaming (`<400ms` Time-to-First-Feedback):**
-  - Acknowledge user input within `50ms` with a quiet phase indicator (not a fake multi-second progress bar).
+- **Time-to-First-Feedback (`<400ms`):**
+  - Acknowledge user input within `50ms` with a quiet phase indicator rather than a fake progress bar.
   - Stream tokens progressively (`tabular-nums` on token/latency readouts) and prevent scroll-hijacking if the user scrolls up while tokens are streaming (`isUserScrolledUp` lock).
 - **Interruptible Generation:**
   - Always expose an immediate **`Stop`** (`Esc` / `Ctrl+C`) trigger that aborts in-flight streams cleanly while preserving partial output already rendered.
-- **Postel's Law for Tool & Prompt Parsing:**
-  - Coerce slightly malformed tool arguments (trailing commas, stringified booleans/numbers) safely before failing a tool call.
-- **Peak-End Rule in Agent Replies:**
-  - End complex runs with a scannable summary, clickable file links, and verifiable evidence rather than trailing boilerplate filler.
 
 ---
 
@@ -83,10 +79,9 @@ Feelcraft is built for **all sorts of agents**, not only browser frontend agents
 
 ---
 
-## 6. QA, Code Review & Autonomous Auditor Agents
+## 6. QA & Code Review Workflow
 
-When acting as a read-only reviewer or QA agent:
-1. Run `node <skill-folder>/scripts/audit-feelcraft.mjs <repo-path>` to gather static signals across Web, Mobile, Backend, and CLI files.
-2. When a live browser or dev server is available, inject `<skill-folder>/scripts/audit-dom-runtime.js` into the page (`page.evaluate()`) to measure actual computed `getBoundingClientRect()` hit targets (`>=36px`), concentric corner math ($R_{\text{outer}} - \text{padding} = R_{\text{inner}}$), `tabular-nums`, and transition durations (`<=300ms`).
-3. Evaluate every user-facing flow against the **3 Gates** (Frequency, Doherty `<400ms`, Motor/Cognitive).
-4. File findings with **exact CSS/code diffs** rather than vague design opinions (e.g., *"Add `tabular-nums` to `.price-ticker` at `PricingCard.tsx:42` to prevent horizontal layout jitter"*).
+When acting as a reviewer or QA agent:
+1. Run `node <skill-folder>/scripts/audit-feelcraft.mjs <repo-path>` as a **heuristic hint scanner** (strips comments, checks applicable signals, and penalizes motion/UX anti-patterns). Treat static regex matches as starting leads, not final proof of visual quality.
+2. When a live browser or dev server is available, inject `<skill-folder>/scripts/audit-dom-runtime.js` into the page (`page.evaluate()`) to measure actual rendered `getBoundingClientRect()` hit targets (`>=32–36px` desktop / `44px` touch), WCAG 2.2 AA contrast (`>=4.5:1` normal text, `>=3.0:1` large text at `>=24px` or `>=18.66px bold`), concentric corner math ($R_{\text{outer}} - \text{padding} = R_{\text{inner}}$), `tabular-nums`, and transition durations (`<=300ms`).
+3. File findings with exact CSS/code diffs rather than subjective aesthetic opinions.

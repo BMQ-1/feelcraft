@@ -1,10 +1,9 @@
 /**
  * Feelcraft Reference Implementations (`examples/feelcraft-primitives.tsx`)
- * Battle-tested implementations for the 4 high-craft algorithms that agents
- * most frequently get subtly wrong when coding from scratch:
+ * Reference implementations for high-craft UI interaction algorithms:
  *   1. Amazon Safe Triangle (2D Barycentric / Cross-Product Cursor Corridor)
  *   2. 6-Digit OTP Input (Postel Paste-Split + Backspace Nav + `one-time-code`)
- *   3. Optimistic Mutation + Undo Toast Queue with `beforeunload` Flush & Idempotency Key
+ *   3. Optimistic Mutation + Undo Toast Queue with `pagehide`/`beforeunload` Flush & Idempotency Key
  *   4. Rubber-Band Drag & Velocity Projection Solver for Swipe-to-Dismiss Sheets
  */
 
@@ -36,17 +35,27 @@ export function useSafeTriangleSubmenu(
   const currentMouse = useRef<Point>({ x: 0, y: 0 });
   const delayTimer = useRef<number | null>(null);
 
+  const cancelPending = useCallback(() => {
+    if (delayTimer.current !== null) {
+      window.clearTimeout(delayTimer.current);
+      delayTimer.current = null;
+    }
+  }, []);
+
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       lastMouse.current = currentMouse.current;
       currentMouse.current = { x: e.clientX, y: e.clientY };
     };
     window.addEventListener('mousemove', onMove, { passive: true });
-    return () => window.removeEventListener('mousemove', onMove);
-  }, []);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      cancelPending();
+    };
+  }, [cancelPending]);
 
   const handleRowEnter = useCallback((onActivate: () => void) => {
-    if (delayTimer.current) window.clearTimeout(delayTimer.current);
+    cancelPending();
     const menuEl = submenuRef.current;
     if (!menuEl) {
       onActivate();
@@ -75,13 +84,16 @@ export function useSafeTriangleSubmenu(
     );
 
     if (movingTowardMenu && insideCorridor) {
-      delayTimer.current = window.setTimeout(onActivate, 240);
+      delayTimer.current = window.setTimeout(() => {
+        delayTimer.current = null;
+        onActivate();
+      }, 240);
     } else {
       onActivate();
     }
-  }, [submenuRef, side]);
+  }, [submenuRef, side, cancelPending]);
 
-  return { handleRowEnter };
+  return { handleRowEnter, cancelPending };
 }
 
 /* ============================================================================
@@ -159,11 +171,12 @@ export function OtpInput({
     const pasted = e.clipboardData.getData('text').replace(/\D/g, '');
     if (!pasted) return;
     const next = [...digits];
-    const chars = pasted.slice(0, length).split('');
-    chars.forEach((ch, i) => {
-      next[i] = ch;
+    const startIdx = pasted.length >= length ? 0 : index;
+    const chars = pasted.slice(0, length - startIdx).split('');
+    chars.forEach((ch, offset) => {
+      next[startIdx + offset] = ch;
     });
-    updateDigits(next, Math.min(chars.length, length - 1));
+    updateDigits(next, Math.min(startIdx + chars.length, length - 1));
   };
 
   return (
@@ -189,9 +202,9 @@ export function OtpInput({
 }
 
 /* ============================================================================
- * 3. OPTIMISTIC UNDO TOAST MANAGER WITH `beforeunload` FLUSH & IDEMPOTENCY KEY
- * Ensures deferred destructive mutations never get lost if the user closes
- * the tab during the 5-second Undo grace window.
+ * 3. OPTIMISTIC UNDO TOAST MANAGER WITH `pagehide`/`beforeunload` FLUSH & IDEMPOTENCY KEY
+ * Ensures deferred destructive mutations stay undoable across tab switches during
+ * the 5-second grace window while still flushing via keepalive if the page unloads.
  * ========================================================================== */
 export interface PendingUndoMutation {
   idempotencyKey: string;
@@ -201,23 +214,31 @@ export interface PendingUndoMutation {
   rollbackUI: () => void;
 }
 
-class UndoMutationQueue {
+export class UndoMutationQueue {
   private pending = new Map<string, { timer: ReturnType<typeof setTimeout>; task: PendingUndoMutation }>();
 
   constructor() {
     if (typeof window !== 'undefined') {
-      const flush = () => this.flushAllKeepalive();
+      const flush = () => {
+        void this.flushAllKeepalive();
+      };
+      // Only flush on actual page unload/termination, NEVER on `visibilitychange`
+      // (switching tabs or Cmd+Tab must preserve the 5-second Undo grace window).
       window.addEventListener('pagehide', flush);
       window.addEventListener('beforeunload', flush);
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') flush();
-      });
     }
   }
 
+  hasPending(key?: string): boolean {
+    return key ? this.pending.has(key) : this.pending.size > 0;
+  }
+
   schedule(task: PendingUndoMutation, graceMs = 5000): () => void {
+    const existing = this.pending.get(task.idempotencyKey);
+    if (existing) clearTimeout(existing.timer);
+
     const timer = setTimeout(() => {
-      this.commit(task.idempotencyKey);
+      void this.commit(task.idempotencyKey);
     }, graceMs);
 
     this.pending.set(task.idempotencyKey, { timer, task });
@@ -232,7 +253,7 @@ class UndoMutationQueue {
     };
   }
 
-  private async commit(key: string) {
+  private async commit(key: string): Promise<void> {
     const entry = this.pending.get(key);
     if (!entry) return;
     this.pending.delete(key);
@@ -252,11 +273,12 @@ class UndoMutationQueue {
     }
   }
 
-  private flushAllKeepalive() {
+  async flushAllKeepalive(): Promise<void> {
+    const deliveries: Promise<void>[] = [];
     for (const [key, { timer, task }] of this.pending.entries()) {
       clearTimeout(timer);
       this.pending.delete(key);
-      fetch(task.commitUrl, {
+      const delivery = fetch(task.commitUrl, {
         method: task.method ?? 'DELETE',
         keepalive: true,
         headers: {
@@ -264,8 +286,16 @@ class UndoMutationQueue {
           'Idempotency-Key': task.idempotencyKey,
         },
         body: task.payload ? JSON.stringify(task.payload) : undefined,
-      }).catch(() => {});
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        })
+        .catch(() => {
+          task.rollbackUI();
+        });
+      deliveries.push(delivery);
     }
+    await Promise.all(deliveries);
   }
 }
 

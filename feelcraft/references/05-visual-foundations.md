@@ -1,13 +1,13 @@
-# 05 · Standalone Visual, Color, Typographic & Copy Foundations
+# 05 · Visual, Color, Typographic & Copy Foundations
 
-Feelcraft is a complete, standalone design-engineering system. Even the best `<300ms` motion physics and `<400ms` optimistic architecture will fail if the surface is painted in AI-slop purple gradients, cluttered with emoji badges, or set in low-contrast gray text. Apply these six visual and structural foundations to every screen, component, chart, and CLI view.
+> **Design System Precedence Rule:** Separate **universal engineering & accessibility rules** (WCAG contrast, `:focus-visible`, `@media (hover: hover)`, `tabular-nums`, `4px` spacing alignment, `color-scheme`) from **default visual scaffolds** (color ramps, single-accent budgets, and typographic weights). Whenever a project already has an established brand system, design tokens, or intentional editorial direction (including brand greens/purples, brutalist/Swiss display typography, or custom palettes), **honor the project's brand system**. Use the scaffolds below as defaults for greenfield apps or unstyled prototypes so the agent avoids generic LLM purple/emerald gradient clichés.
 
 ---
 
 ## 1. Color & Surface Physics (Luminance Depth, Never Glows)
 
-### A. One Tinted Neutral Ramp Per Surface (Starting Scaffolds, Not a House Style)
-Build every interface from **one cohesive neutral ramp** with ultra-low chroma so users can work in it for hours without eye fatigue. The three ramps below are **starting scaffolds**—always tune temperature and tint to fit the product's actual world so apps never look like copies of the same dark template:
+### A. Tinted Neutral Ramps (Greenfield Scaffolds, Not a Mandatory House Style)
+When building a new interface without pre-existing brand tokens, start from **one cohesive neutral ramp** with low chroma so users can work for hours without eye fatigue. Tune temperature and tint to fit the product's domain:
 
 | Role | Graphite (Technical / Apps) | Warm Stone (Human / Editorial / Craft) | Deep Ink (Systems / Developer / Night) |
 | :--- | :--- | :--- | :--- |
@@ -25,25 +25,26 @@ Build every interface from **one cohesive neutral ramp** with ultra-low chroma s
 | **Light: Muted Ink (`>=4.5:1`)** | `#6E737E` | `#756C60` | `#667185` |
 
 ### B. Depth via Luminance Steps & Hairlines (`Solid Drawing in 3D`)
-- **Dark Mode Depth:** Never use heavy drop-shadows on dark themes. Create elevation by stepping up surface luminance (`Canvas -> Card -> Raised`) and framing containers with a **`1px` hairline border** (`rgba(255, 255, 255, 0.08)`) plus an optional top inner specular highlight (`inset 0 1px 0 rgba(255, 255, 255, 0.06)`).
+- **Dark Mode Depth:** Avoid heavy drop-shadows on dark themes. Create elevation by stepping up surface luminance (`Canvas -> Card -> Raised`) and framing containers with a **`1px` hairline border** (`rgba(255, 255, 255, 0.08)`) plus an optional top inner highlight (`inset 0 1px 0 rgba(255, 255, 255, 0.06)`).
 - **Light Mode Depth:** Use crisp `1px` dark hairlines (`rgba(15, 16, 18, 0.08)`) paired with soft, tight neutral shadows (`0 1px 2px rgba(0, 0, 0, 0.05)`).
 
-### C. The Von Restorff Accent Budget (`90% Quiet Chrome, 1 Accent`)
-- Keep 90% of navigation, buttons, borders, and surfaces in the neutral ramp.
-- Choose **one purposeful accent hue** derived from the product's real brand or physical world (e.g., Cinema Amber `#D97706` for a video/subtitle tool, Signal Vermilion `#E03C1F` for a studio tool, Cobalt `#2563EB` for engineering docs, Brass `#B45309` for a ledger, or Terracotta `#C2410C` for editorial) rather than defaulting every app to the exact same color—and reserve it strictly for the primary action, active selection indicator, or focal data series.
-- **Reserve Green Strictly for Semantic Meaning (Never as Generic UI Chrome):** Do not use emerald, mint, teal, lime, chartreuse, or olive-green (`#10A37F`, `#10B981`, `#00FF88`, `#BEF264`, `#D9F99D`, `emerald-*`, `teal-*`, `lime-*`) as a default brand accent, active nav highlight, or dark-mode surface tint unless the product's explicit established brand is green. Painting dark-mode UIs in emerald/teal or dark olive surfaces + pastel lime buttons is ChatGPT's #1 visual slop signature, and it destroys the semantic isolation of real positive/healthy/online status indicators.
-- **One Primary CTA Per Viewport (No Competing Filled Buttons):** Never place a bright accent-filled button in the sidebar (`New item`) while simultaneously rendering another bright accent-filled CTA in the main canvas (`Create ...`), an accent logo tile, and an accent-tinted active nav row. Keep the logo tile monochrome/neutral, keep the active nav row in a raised neutral surface step (`--fc-bg-raised`) with crisp primary ink, and reserve the high-contrast fill for **one** primary action.
-- **High-Craft Dark Primary CTA:** On dark interfaces, a crisp off-white primary button (`background: #EDEDEF; color: #141518`) often looks far more deliberate than a bright colored rectangle, leaving the accent color for small high-signal indicators.
-- **Contrast Enforcement:** Text or icons placed on an accent fill must achieve **`>= 4.5:1` contrast** (use dark ink `#141518` on warm amber or orange fills; never force white text onto a mid-luminance background).
+### C. The Von Restorff Accent Budget (`90% Quiet Chrome`)
+- In dense workspaces (`Operate` mode), keep ~90% of navigation, buttons, borders, and surfaces in the neutral ramp so key interactive states stand out immediately.
+- Choose a purposeful accent hue derived from the product's brand or domain (e.g., Cinema Amber `#D97706`, Signal Vermilion `#E03C1F`, Cobalt `#2563EB`, Brass `#B45309`, Terracotta `#C2410C`, or the user's brand primary) and reserve high-contrast fills for primary actions, active focus rings, or focal data series.
+- **Intentional vs. Default Green & Purple:**
+  - **Semantic & Brand Use (Encouraged):** Use green (`#16A34A`, `#4CC38A`, `emerald-*`, `green-*`) freely for semantic positive/success/online states, financial gains, diffs, or when the product's actual brand is green (e.g., finance, sustainability, audio, or messaging brands). Likewise, use purple/indigo freely when it is part of the user's brand identity.
+  - **Unprompted LLM Slop (Avoid):** When the user has *not* requested a green or purple theme, do not default to multi-stop purple/indigo-to-cyan gradients (`from-indigo-500 via-purple-500 to-cyan-500`) or generic neon emerald/lime-to-cyan dark-mode washes (`#10A37F` / `#00FF88` / `from-emerald-400 to-cyan-400`).
+- **Primary CTA Hierarchy:** Avoid competing primary buttons in the same viewport region (e.g., a bright filled sidebar button next to a bright filled header CTA and a filled active nav pill). Keep active sidebar rows on a raised surface step (`--fc-bg-raised`) with crisp primary ink.
+- **WCAG 2.2 AA Contrast Enforcement:** Normal text (`< 24px` regular or `< 18.66px` bold) must achieve **`>= 4.5:1`** contrast against its effective background; large text (`>= 24px` regular or `>= 18.66px` bold `>= 700`) and UI components must achieve **`>= 3.0:1`**.
 
-### D. Hard Ban on the 7 AI Color Slop Tells
-1. **No ChatGPT green/olive/lime dark-mode slop:** Never tint dark backgrounds/cards in muddy olive/forest green (`bg-emerald-950`, `bg-lime-950`, `bg-green-950`, or dark RGB surfaces where the green channel noticeably exceeds red and blue), and never splash `#10A37F` / `emerald-*` / `teal-*` / pastel chartreuse-lime (`#BEF264`, `#D9F99D`, `lime-200/300/400`) across logo tiles, active nav pills, hero card borders, and multiple buttons.
-2. **No Claude/Tailwind purple/indigo/violet-to-cyan palettes** (`from-indigo-500 via-purple-500 to-pink-500`).
-3. **No gradient text** (`bg-clip-text text-transparent`).
-4. **No colored neon glows or colored drop-shadows** (`shadow-emerald-500/40`, `shadow-indigo-500/40`, glowing borders).
-5. **No decorative blurry color blobs, orbs, or radial washes** floating behind dark cards.
-6. **No rainbow icon boxes** (every sidebar or feature icon wrapped in a different pastel circle).
-7. **No pure `#000000` background paired with pure `#FFFFFF` text** (causes OLED smear and astigmatism halation).
+### D. Common Unprompted LLM Visual Clichés to Avoid
+Unless explicitly requested by the user, avoid these default LLM habits:
+1. **Unprompted multi-stop neon gradients** (`from-indigo-500 via-purple-500 to-pink-500` or `from-emerald-400 to-cyan-400`).
+2. **Low-contrast gradient text** (`bg-clip-text text-transparent`) on functional headings.
+3. **Colored neon box-shadow glows** (`shadow-emerald-500/50`, `shadow-purple-500/50`) used in place of surface hierarchy.
+4. **Decorative blurry color blobs/orbs** floating behind dark data cards.
+5. **Rainbow icon boxes** (every sidebar icon wrapped in a different saturated circle without semantic meaning).
+6. **Pure `#000000` canvas paired with pure `#FFFFFF` body copy** (causes OLED halation; prefer `#090B10`–`#12110F` with `#EDEDEF` ink).
 
 ---
 
@@ -61,20 +62,20 @@ Build every interface from **one cohesive neutral ramp** with ultra-low chroma s
 
 ## 3. Typography, Scale & Case Discipline
 
-- **Font Pairing (Max 2 Families):**
-  - **Primary UI Sans:** A clean, high-legibility grotesk or humanist sans (or the project's existing brand font).
-  - **Monospace Partner:** Used strictly for code, `<kbd>` shortcut hints, IDs, commit hashes, and technical metadata.
-  - **Optional Editorial Serif / Display:** Used only when the product's character calls for editorial contrast in top-level headlines.
-- **Hierarchy via Size & Contrast, Not Heavy Weight:**
-  - Use only **`400` (Regular)** and **`500` (Medium)** for 95% of the interface, with **`600` (SemiBold)** reserved for top-level titles.
-  - **Ban `700/800/900` (`font-bold` / `font-extrabold` / `font-black`) shouting headings.**
-- **Sentence Case Everywhere:**
-  - Write `Paid this month`, `Navigation`, and `Create project`—**never wide-tracked uppercase labels (`PAID THIS MONTH`, `uppercase tracking-widest`)**.
+- **Font Pairing (Max 2–3 Purposeful Families):**
+  - **Primary UI Sans:** A high-legibility grotesk or humanist sans (or the project's existing brand font).
+  - **Monospace Partner:** Used for code, `<kbd>` shortcut hints, IDs, commit hashes, and technical metadata.
+  - **Editorial Serif / Display:** Used when the product's character calls for editorial, Swiss-grid, or display contrast in headlines.
+- **Contextual Weight Hierarchy:**
+  - **Dense UI & `Operate` Workspaces:** Prefer **`400` (Regular)** and **`500` (Medium)** for controls, tables, and body text, with **`600` (SemiBold)** for section and view titles so dense screens stay calm.
+  - **Editorial, Marketing & Display (`Showcase` / Brand Surfaces):** **`700–800` (`font-bold` / `font-extrabold`)** is completely appropriate when used deliberately for display headlines, poster/Swiss typography, or established brand hierarchy—just avoid applying `font-bold` indiscriminately to every card label, badge, and paragraph.
+- **Case Discipline:**
+  - Default to **Sentence case** (`Paid this month`, `Create project`) for standard UI controls, buttons, and menus for fast scannability. Reserve tracked uppercase (`uppercase tracking-wider`) for intentional editorial kickers, mono metadata tags, or table column headers where it fits the design language.
 - **Optical Tracking by Size:**
   - Large display headings (`>= 28px`): tighten tracking slightly (`-0.02em` to `-0.03em`).
   - Body text (`14px–16px`): normal tracking (`0`).
-  - Small text & captions (`11px–13px`): slightly open or normal tracking (`0` to `+0.01em`)—**never apply negative letter-spacing to small text**, and never drop below `11px`.
-- **Precision Rules:** Always apply `tabular-nums` to numbers, `text-wrap: balance` to headings, `text-wrap: pretty` to paragraphs, and `-webkit-font-smoothing: antialiased` on the document body.
+  - Small text & captions (`11px–13px`): normal or slightly open tracking (`0` to `+0.01em`)—**never apply negative letter-spacing to small text**, and never drop below `11px`.
+- **Precision Rules:** Always apply `tabular-nums` to numbers/timers/tables, `text-wrap: balance` to multi-line headings, `text-wrap: pretty` to body paragraphs, and `-webkit-font-smoothing: antialiased` on `body`.
 
 ---
 
